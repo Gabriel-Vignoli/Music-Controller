@@ -47,3 +47,28 @@ ipcMain.on('music-upload', (event, file) => {
     }
   });
 });
+
+ipcMain.on("music-get", () => {
+  sendUpdateList()
+})
+
+async function sendUpdateList() {
+  const files = await fs.promises.readdir(musicDir)
+  mainWindow.webContents.send("music-list", files)
+}
+
+ipcMain.on("music-delete", async(event, file) => {
+  const filePath = path.join(musicDir, file)
+  fs.unlink(filePath, async (err) => {
+    if(err) {
+      mainWindow.webContents.send("toast:recive", err)
+    } else {
+      sendUpdateList()
+      mainWindow.webContents.send("toast:recive", "File deleted successfully");
+    }
+  })
+})
+
+ipcMain.on("music-to-play" , (event, file) => {
+  mainWindow.webContents.send("music-playable", file)
+})
